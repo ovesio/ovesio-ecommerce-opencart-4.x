@@ -1,0 +1,101 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-ecommerce" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa-solid fa-save"></i></button>
+        <a href="{{ back }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fa-solid fa-reply"></i></a></div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> {{ error_warning }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    <div class="alert alert-warning"><i class="fa-solid fa-triangle-exclamation"></i> {{ text_warning_hash }}</div>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fa-solid fa-pencil"></i> {{ text_edit }}</h3>
+      </div>
+      <div class="card-body">
+        <form action="{{ save }}" method="post" enctype="multipart/form-data" id="form-ecommerce">
+          <input type="hidden" name="module_ovesio_ecommerce_hash" value="{{ module_ovesio_ecommerce_hash }}" />
+
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="module_ovesio_ecommerce_status" id="input-status" class="form-select">
+                {% if module_ovesio_ecommerce_status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="input-export-duration">{{ entry_export_duration }}</label>
+            <div class="col-sm-10">
+              <select name="module_ovesio_ecommerce_export_duration" id="input-export-duration" class="form-select">
+                {% if module_ovesio_ecommerce_export_duration == 24 %}
+                <option value="12">{{ option_12_months }}</option>
+                <option value="24" selected="selected">{{ option_24_months }}</option>
+                {% else %}
+                <option value="12" selected="selected">{{ option_12_months }}</option>
+                <option value="24">{{ option_24_months }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>{{ text_instructions }}</legend>
+            <div class="alert alert-info">
+                {{ text_help_signup }}
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_product_feed }}</label>
+                <div class="col-sm-10">
+                    <div class="input-group">
+                        <input type="text" value="{{ product_feed_url }}" class="form-control" readonly id="product-feed-url" />
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('product-feed-url')"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_order_feed }}</label>
+                <div class="col-sm-10">
+                    <div class="input-group">
+                        <input type="text" value="{{ order_feed_url }}" class="form-control" readonly id="order-feed-url" />
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('order-feed-url')"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+          </fieldset>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+function copyToClipboard(elementId) {
+  var copyText = document.getElementById(elementId);
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); /* For mobile devices */
+  document.execCommand("copy");
+}
+//--></script>
+{{ footer }}

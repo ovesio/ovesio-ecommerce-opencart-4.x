@@ -1,0 +1,125 @@
+<?php
+namespace Opencart\Catalog\Controller\Extension\Ovesio\Module;
+
+class Ecommerce extends \Opencart\System\Engine\Controller {
+
+	public function index(): void {
+        $this->load->language('extension/ovesio/module/ecommerce');
+
+        if (!$this->config->get('module_ovesio_ecommerce_status')) {
+            $this->response->setOutput(json_encode(['error' => $this->language->get('error_disabled')]));
+            return;
+        }
+
+        $hash = $this->request->get['hash'] ?? null;
+        $configured_hash = $this->config->get('module_ovesio_ecommerce_hash');
+
+        if(!$configured_hash || $hash !== $configured_hash)
+        {
+            $this->response->setOutput(json_encode(['error' => $this->language->get('error_access_denied')]));
+            return;
+        }
+
+        // Load new model
+        $this->load->model('extension/ovesio/module/ecommerce');
+
+        $action = (isset($this->request->get['action']) && $this->request->get['action'] == 'orders') ? 'orders' : 'products';
+
+        if($action == 'orders')
+        {
+            $duration_months = (int)$this->config->get('module_ovesio_ecommerce_export_duration');
+            if ($duration_months <= 0) $duration_months = 12; // default
+
+            // Use model to get orders
+            $orders = $this->model_extension_ovesio_module_ecommerce->getOrders($duration_months);
+
+            $data = [];
+
+            foreach($orders as $row)
+            {
+                $data[$row['order_id']]['order_id'] = $row['order_id'];
+                $data[$row['order_id']]['customer_id'] = $row['customer_id'];
+                $data[$row['order_id']]['total'] = $row['total'];
+                $data[$row['order_id']]['date'] = $row['date'];
+                $data[$row['order_id']]['products'][] = [
+                    'sku' => $row['sku'],
+                    'name' => $row['name'],
+                    'quantity' => $row['quantity'],
+                    'price' => $row['price'],
+                ];
+            }
+            $data = array_values($data);
+        } else {
+
+            $data = [];
+
+            // Use model to get categories
+            $categories = $this->model_extension_ovesio_module_ecommerce->getProductCategories((int)$this->config->get('config_language_id'));
+
+            // Use model to get products
+            $products = $this->model_extension_ovesio_module_ecommerce->getProducts(
+                (int)$this->config->get('config_store_id'),
+                (int)$this->config->get('config_language_id'),
+                (int)$this->config->get('config_customer_group_id')
+            );
+
+            foreach($products as $row) {
+                // Determine SKU (model or product_id fallback handled in query, but redundancy check if model is empty string)
+                $sku = $row['sku'];
+                if(empty($sku)) {
+                    $sku = $row['product_id'];
+                }
+
+                $data[$sku]['sku'] = $sku;
+                $data[$sku]['name'] = strip_tags(html_entity_decode($row['name'], ENT_QUOTES, 'UTF-8'));
+                $data[$sku]['quantity'] = (int) $row['quantity'];
+
+                $price = !empty($row['special']) ? $row['special'] : $row['price'];
+                $price = $this->tax->calculate($price, $row['tax_class_id'], $this->config->get('config_tax'));
+                $data[$sku]['price'] = $price;
+
+                /**
+                 * Optional rows
+                 */
+                if($row['quantity'] <= 0) {
+                    $data[$sku]['availability'] =  'out_of_stock';
+                } else {
+                    $data[$sku]['availability'] =  'in_stock';
+                }
+
+                $data[$sku]['description'] = $this->htmlToPlainText(html_entity_decode($row['description'], ENT_QUOTES, 'UTF-8'));
+
+                $data[$sku]['manufacturer'] = strip_tags(html_entity_decode((string)$row['manufacturer'], ENT_QUOTES, 'UTF-8'));
+
+                $server = $this->request->server['HTTPS'] ? $this->config->get('config_ssl') : $this->config->get('config_url');
+                if (!$server) $server = HTTP_SERVER; // fallback
+
+                $data[$sku]['image'] = $row['image'] ? $server . 'image/' . html_entity_decode($row['image'], ENT_QUOTES, 'UTF-8') : null;
+
+                $data[$sku]['url'] = $this->url->link('product/product', 'product_id=' . $row['product_id']);
+
+                $data[$sku]['category'] = isset($categories[$row['product_id']]) ? strip_tags(html_entity_decode($categories[$row['product_id']], ENT_QUOTES, 'UTF-8')) : null;
+            }
+
+            $data = array_values($data);
+        }
+
+        $filename = "export_" . ($action == 'orders' ? 'orders' : 'products') . "_" . date('Y-m-d');
+
+        $filename .= ".json";
+
+        $this->response->addHeader('Content-Disposition: attachment; filename="' . $filename . '";');
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode(['data' => $data], JSON_PRETTY_PRINT));
+    }
+
+    private function htmlToPlainText($content) {
+        $text = strip_tags($content);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/\t+/', ' ', $text);
+        $text = preg_replace('/ +/', ' ', $text);
+        $text = preg_replace("/(\r?\n){2,}/", "\n", $text);
+
+        return trim($text);
+    }
+}
