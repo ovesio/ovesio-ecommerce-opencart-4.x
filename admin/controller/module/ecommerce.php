@@ -1,11 +1,11 @@
 <?php
-namespace Opencart\Admin\Controller\Extension\Ovesio\Module;
+namespace Opencart\Admin\Controller\Extension\OvesioEcommerce\Module;
 
 class Ecommerce extends \Opencart\System\Engine\Controller {
 	private $error = array();
 
 	public function index(): void {
-		$this->load->language('extension/ovesio/module/ecommerce');
+		$this->load->language('extension/ovesio_ecommerce/module/ecommerce');
 
 		$this->document->setTitle($this->language->get('heading_title'));
 
@@ -23,10 +23,10 @@ class Ecommerce extends \Opencart\System\Engine\Controller {
 
 		$data['breadcrumbs'][] = array(
 			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('extension/ovesio/module/ecommerce', 'user_token=' . $this->session->data['user_token'], true)
+			'href' => $this->url->link('extension/ovesio_ecommerce/module/ecommerce', 'user_token=' . $this->session->data['user_token'], true)
 		);
 
-		$data['save'] = $this->url->link('extension/ovesio/module/ecommerce.save', 'user_token=' . $this->session->data['user_token'], true);
+		$data['save'] = $this->url->link('extension/ovesio_ecommerce/module/ecommerce.save', 'user_token=' . $this->session->data['user_token'], true);
 		$data['back'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
 
 		if (isset($this->request->post['module_ovesio_ecommerce_status'])) {
@@ -53,18 +53,18 @@ class Ecommerce extends \Opencart\System\Engine\Controller {
 		$data['module_ovesio_ecommerce_hash'] = $hash;
 
 		// Generate URLs
-		$data['product_feed_url'] = HTTP_CATALOG . 'index.php?route=extension/ovesio/module/ecommerce&hash=' . $hash;
-		$data['order_feed_url'] = HTTP_CATALOG . 'index.php?route=extension/ovesio/module/ecommerce&action=orders&hash=' . $hash;
+		$data['product_feed_url'] = HTTP_CATALOG . 'index.php?route=extension/ovesio_ecommerce/module/ecommerce&hash=' . $hash;
+		$data['order_feed_url'] = HTTP_CATALOG . 'index.php?route=extension/ovesio_ecommerce/module/ecommerce&action=orders&hash=' . $hash;
 
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');
 
-		$this->response->setOutput($this->load->view('extension/ovesio/module/ecommerce', $data));
+		$this->response->setOutput($this->load->view('extension/ovesio_ecommerce/module/ecommerce', $data));
 	}
 
 	public function save(): void {
-		$this->load->language('extension/ovesio/module/ecommerce');
+		$this->load->language('extension/ovesio_ecommerce/module/ecommerce');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 			$this->load->model('setting/setting');
@@ -84,7 +84,7 @@ class Ecommerce extends \Opencart\System\Engine\Controller {
 	}
 
 	protected function validate() {
-		if (!$this->user->hasPermission('modify', 'extension/ovesio/module/ecommerce')) {
+		if (!$this->user->hasPermission('modify', 'extension/ovesio_ecommerce/module/ecommerce')) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 

@@ -1,10 +1,10 @@
 <?php
-namespace Opencart\Catalog\Controller\Extension\Ovesio\Module;
+namespace Opencart\Catalog\Controller\Extension\OvesioEcommerce\Module;
 
 class Ecommerce extends \Opencart\System\Engine\Controller {
 
 	public function index(): void {
-        $this->load->language('extension/ovesio/module/ecommerce');
+        $this->load->language('extension/ovesio_ecommerce/module/ecommerce');
 
         if (!$this->config->get('module_ovesio_ecommerce_status')) {
             $this->response->setOutput(json_encode(['error' => $this->language->get('error_disabled')]));
@@ -21,7 +21,7 @@ class Ecommerce extends \Opencart\System\Engine\Controller {
         }
 
         // Load new model
-        $this->load->model('extension/ovesio/module/ecommerce');
+        $this->load->model('extension/ovesio_ecommerce/module/ecommerce');
 
         $action = (isset($this->request->get['action']) && $this->request->get['action'] == 'orders') ? 'orders' : 'products';
 
@@ -31,7 +31,7 @@ class Ecommerce extends \Opencart\System\Engine\Controller {
             if ($duration_months <= 0) $duration_months = 12; // default
 
             // Use model to get orders
-            $orders = $this->model_extension_ovesio_module_ecommerce->getOrders($duration_months);
+            $orders = $this->model_extension_ovesio_ecommerce_module_ecommerce->getOrders($duration_months);
 
             $data = [];
 
@@ -54,10 +54,10 @@ class Ecommerce extends \Opencart\System\Engine\Controller {
             $data = [];
 
             // Use model to get categories
-            $categories = $this->model_extension_ovesio_module_ecommerce->getProductCategories((int)$this->config->get('config_language_id'));
+            $categories = $this->model_extension_ovesio_ecommerce_module_ecommerce->getProductCategories((int)$this->config->get('config_language_id'));
 
             // Use model to get products
-            $products = $this->model_extension_ovesio_module_ecommerce->getProducts(
+            $products = $this->model_extension_ovesio_ecommerce_module_ecommerce->getProducts(
                 (int)$this->config->get('config_store_id'),
                 (int)$this->config->get('config_language_id'),
                 (int)$this->config->get('config_customer_group_id')

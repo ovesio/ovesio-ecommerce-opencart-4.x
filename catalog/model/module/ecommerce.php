@@ -1,16 +1,18 @@
 <?php
-namespace Opencart\Catalog\Model\Extension\Ovesio\Module;
+namespace Opencart\Catalog\Model\Extension\OvesioEcommerce\Module;
 
 class Ecommerce extends \Opencart\System\Engine\Model {
 
 	public function getOrders(int $period_months = 12): array {
 		$period_months = (int)$period_months;
-
+        $config_complete_status = (array)$this->config->get('config_complete_status');
 		$sql = "SELECT op.order_id as order_id, MD5(o.email) as customer_id, p.product_id as sku, op.name, op.quantity, (op.price + op.tax) as price, o.total, o.date_added as `date`
                 FROM `" . DB_PREFIX . "order_product` op
                 JOIN `" . DB_PREFIX . "product` p ON p.product_id = op.product_id
                 JOIN `" . DB_PREFIX . "order` o ON o.order_id = op.order_id
-                WHERE o.date_added >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL " . (int)$period_months . " MONTH), '%Y-%m-01') AND o.order_status_id > 0
+                WHERE o.date_added >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL " . (int)$period_months . " MONTH), '%Y-%m-01')
+                AND o.order_status_id > 0
+                AND o.order_status_id IN (" . implode(',', $config_complete_status) . ")
                 ORDER BY op.order_product_id ASC";
 
 		$query = $this->db->query($sql);
@@ -23,7 +25,7 @@ class Ecommerce extends \Opencart\System\Engine\Model {
 		$language_id = (int)$language_id;
 		$customer_group_id = (int)$customer_group_id;
 
-		$sql = "SELECT p.product_id as sku, p.product_id, pd.name AS `name`, pd.description AS `description`, p.image, m.name AS manufacturer, p.quantity as quantity, p.stock_status_id, p.price, p.tax_class_id,
+		$sql = "SELECT p.sku, p.product_id, pd.name AS `name`, pd.description AS `description`, p.image, m.name AS manufacturer, p.quantity as quantity, p.stock_status_id, p.price, p.tax_class_id,
             (SELECT price FROM " . DB_PREFIX . "product_discount ps WHERE ps.product_id = p.product_id AND ps.customer_group_id = '" . (int)$customer_group_id . "' AND ((ps.date_start = '0000-00-00' OR ps.date_start < NOW()) AND (ps.date_end = '0000-00-00' OR ps.date_end > NOW())) ORDER BY ps.priority ASC, ps.price ASC LIMIT 1) as special
             FROM " . DB_PREFIX . "product p
             JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id)
