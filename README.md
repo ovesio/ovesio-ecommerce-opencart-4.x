@@ -38,7 +38,7 @@ Connect your store to Ovesio to unlock powerful capabilities:
 1.  **Backup:** Always backup your site files and database before installing new extensions.
 2. **Upload & Install:** Follow these steps to install the module:
 
-    *   Download the `ovesio_ecommerce.ocmod.zip` archive.
+    *   Download the `ovesio_ecommerce.ocmod.zip` archive from the [Releases](https://github.com/ovesio/ovesio-ecommerce-opencart-4.x/releases) page.
     *   Login to your OpenCart Admin Panel.
     *   Go to **Extensions** > **Installer**.
     *   Click **Upload** and select the downloaded zip file.

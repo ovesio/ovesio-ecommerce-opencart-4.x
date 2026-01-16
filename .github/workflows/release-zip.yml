@@ -17,12 +17,14 @@ jobs:
       - name: Build ocmod zip
         run: |
           PLUGIN=ovesio_ecommerce
-          mkdir "$PLUGIN"
-          rsync -a ./ "$PLUGIN"/ --exclude '.git*' --exclude '.github'
+          BUILD_DIR="$(mktemp -d)"
 
-          cd "$PLUGIN"
-          zip -r "../$PLUGIN.ocmod.zip" .
-          cd ..
+          rsync -a ./ "$BUILD_DIR"/ \
+            --exclude '.git*' \
+            --exclude '.github' \
+            --exclude "$PLUGIN.ocmod.zip"
+
+          (cd "$BUILD_DIR" && zip -r "$GITHUB_WORKSPACE/$PLUGIN.ocmod.zip" .)
 
       - name: Upload asset
         uses: softprops/action-gh-release@v1
